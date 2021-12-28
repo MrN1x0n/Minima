@@ -79,7 +79,7 @@ main() {
 #2) Log in
 #3) Copy the node ID
 #4) Execute the command below and enter the node ID
-#. <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/multi_tool.sh) -rg\n"
+#. <(wget -qO- https://raw.githubusercontent.com/MrN1x0n/MrN1x0n/main/insert_variable.sh) -rg\n"
 		local t_re="\n${C_R}Either the node is not registered, or the RPC does not work correctly, which cannot be fixed!${RES}\n"
 		local t_ni="\nNode ID:              ${C_LGn}%s${RES}"
 		local t_raf="Rewards after fork:   ${C_LGn}%d${RES}"
