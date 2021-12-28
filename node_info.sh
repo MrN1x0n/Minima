@@ -60,7 +60,7 @@ main() {
 #2) Авторизоваться
 #3) Скопировать ID ноды
 #4) Выполнить команду ниже и вставить ID ноды
-#. <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/multi_tool.sh) -rg\n"
+#. <(wget -qO- https://raw.githubusercontent.com/MrN1x0n/Minima/main/multi_tool.sh) -rg\n"
 		local t_re="\n${C_R}Либо не зарегистрирована нода, либо некорректно работает RPC, который не починить!${RES}\n"
 		local t_ni="\nID ноды:              ${C_LGn}%s${RES}"
 		local t_raf="Награды после форка:  ${C_LGn}%d${RES}"
@@ -69,7 +69,7 @@ main() {
 		
 		local t_nv="\nВерсия ноды:          ${C_LGn}%s${RES}"
 		local t_lb="Последний блок:       ${C_LGn}%s${RES}"
-	# Send Pull request with new texts to add a language - https://github.com/SecorD0/Minima/blob/main/node_info.sh
+	# Send Pull request with new texts to add a language - https://github.com/MrN1x0n/Minima/blob/main/node_info.sh
 	#elif [ "$language" = ".." ]; then
 	else
 		#local t_re="\n${C_R}You haven't registered the node!${RES}
