@@ -143,7 +143,7 @@ docker_install() {
 	else
 		printf_n "${C_LGn}Node installation...${RES}"
 		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/docker.sh)
-		docker run -dit --restart on-failure --name "${node_name}_node" -p $port:9001 -p $((port+1)):9002 tcsr/minima
+		docker run -dit --restart on-failure --name "${node_name}_node" -p $port:9001 -p $((port+1)):9002 secord/minima
 	fi
 	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "${node_name}_log" -v "docker logs ${node_name}_node -fn 100" -a
 	printf_n "${C_LGn}Done!${RES}\n"
