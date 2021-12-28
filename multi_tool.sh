@@ -162,7 +162,7 @@ uninstall() {
 	local is_docker=`docker ps -a 2>/dev/null | grep minima_node`
 	if [ -n "$is_docker" ]; then
 		docker rm `docker ps -a | grep minima | awk '{print $1}'` -f
-		docker rmi tscr/minima
+		docker rmi securd/minima
 	else
 		local service_files=`echo /etc/systemd/system/minima* | sed 's%/etc/systemd/system/%%g'`
 		for service_file in $service_files; do
