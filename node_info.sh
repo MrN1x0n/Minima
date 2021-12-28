@@ -1,51 +1,44 @@
 #!/bin/bash
 # Default variables
-function="install"
-ram="1G"
-port="9001"
+port="9002"
+language="EN"
+raw_output="false"
 
 # Options
 . <(wget -qO- https://raw.githubusercontent.com/MrN1x0n/MrN1x0n/main/color.sh) --
-option_value(){ echo "$1" | sed -e 's%^--[^=]*=%%g; s%^-[^=]*=%%g'; }
+option_value(){ echo $1 | sed -e 's%^--[^=]*=%%g; s%^-[^=]*=%%g'; }
 while test $# -gt 0; do
 	case "$1" in
 	-h|--help)
 		. <(wget -qO- https://raw.githubusercontent.com/MrN1x0n/MrN1x0n/main/logo.sh)
 		echo
-		echo -e "${C_LGn}Functionality${RES}: the script performs many actions related to a Minima node"
+		echo -e "${C_LGn}Functionality${RES}: the script shows information about a Minima node"
 		echo
-		echo -e "${C_LGn}Usage${RES}: script ${C_LGn}[OPTIONS]${RES}"
+		echo -e "Usage: script ${C_LGn}[OPTIONS]${RES}"
 		echo
 		echo -e "${C_LGn}Options${RES}:"
-		echo -e "  -h,  --help         show the help page"
-		echo -e "  -r,  --ram VALUE    limitation of memory usage. E.g. '${C_LGn}512m${RES}', '${C_LGn}1G${RES}' (default)"
-		echo -e "  -d,  --docker       install the node into Docker"
-		echo -e "  -p,  --port NUMBER  port used by the node (default is '${C_LGn}${port}${RES}')"
-		echo -e "  -rg, --register     register the node in IncentiveCash program"
-		echo -e "  -un, --uninstall    uninstall the node"
+		echo -e "  -h, --help               show help page"
+		echo -e "  -p, --port PORT          RPC port of the node (default is ${C_LGn}${port}${RES})"
+		echo -e "  -l, --language LANGUAGE  use the LANGUAGE for texts"
+		echo -e "                           LANGUAGE is '${C_LGn}EN${RES}' (default), '${C_LGn}RU${RES}'"
+		echo -e "  -ro, --raw-output        the raw JSON output"
+		echo
+		echo -e "You can use either \"=\" or \" \" as an option and value ${C_LGn}delimiter${RES}"
 		echo
 		return 0 2>/dev/null; exit 0
 		;;
-	-rg|--register)
-		function="register"
-		shift
-		;;
-	-r*|--ram*)
-		if ! grep -q "=" <<< "$1"; then shift; fi
-		ram=`option_value "$1"`
-		shift
-		;;
 	-p*|--port*)
-		if ! grep -q "=" <<< "$1"; then shift; fi
-		port=`option_value "$1"`
+		if ! grep -q "=" <<< $1; then shift; fi
+		port=`option_value $1`
 		shift
 		;;
-	-d|--docker)
-		function="docker_install"
+	-l*|--language*)
+		if ! grep -q "=" <<< $1; then shift; fi
+		language=`option_value $1`
 		shift
 		;;
-	-un|--uninstall)
-		function="uninstall"
+	-ro|--raw-output)
+		raw_output="true"
 		shift
 		;;
 	*|--)
@@ -53,142 +46,89 @@ while test $# -gt 0; do
 		;;
 	esac
 done
+
 # Functions
 printf_n(){ printf "$1\n" "${@:2}"; }
-install() {
-	if [ "$port" = "9001" ]; then
-		local node_name="minima"
-		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "minima_node_info" -v ". <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/node_info.sh) -l RU 2> /dev/null" -a
+main() {
+	sudo apt install jq -y &>/dev/null
+	# Texts
+	if [ "$language" = "RU" ]; then
+		#local t_re="\n${C_R}Вы не зарегистрировали ноду!${RES}
+
+#${C_LGn}Для регистрации необходимо${RES}:
+#1) Перейти на сайт: https://incentivecash.minima.global/
+#2) Авторизоваться
+#3) Скопировать ID ноды
+#4) Выполнить команду ниже и вставить ID ноды
+#. <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/multi_tool.sh) -rg\n"
+		local t_re="\n${C_R}Либо не зарегистрирована нода, либо некорректно работает RPC, который не починить!${RES}\n"
+		local t_ni="\nID ноды:              ${C_LGn}%s${RES}"
+		local t_raf="Награды после форка:  ${C_LGn}%d${RES}"
+		local t_rbf="Награды до форка:     ${C_LGn}%d${RES}"
+		local t_lp="Последний сигнал:     ${C_LGn}%s${RES} (UTC)"
+		
+		local t_nv="\nВерсия ноды:          ${C_LGn}%s${RES}"
+		local t_lb="Последний блок:       ${C_LGn}%s${RES}"
+	# Send Pull request with new texts to add a language - https://github.com/SecorD0/Minima/blob/main/node_info.sh
+	#elif [ "$language" = ".." ]; then
 	else
-		local node_name="minima_${port}"
-		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "${node_name}_node_info" -v ". <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/node_info.sh) -l RU -p $((port+1)) 2> /dev/null" -a
+		#local t_re="\n${C_R}You haven't registered the node!${RES}
+
+#${C_LGn}To register you need to${RES}:
+#1) Go to the site: https://incentivecash.minima.global/
+#2) Log in
+#3) Copy the node ID
+#4) Execute the command below and enter the node ID
+#. <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/multi_tool.sh) -rg\n"
+		local t_re="\n${C_R}Either the node is not registered, or the RPC does not work correctly, which cannot be fixed!${RES}\n"
+		local t_ni="\nNode ID:              ${C_LGn}%s${RES}"
+		local t_raf="Rewards after fork:   ${C_LGn}%d${RES}"
+		local t_rbf="Rewards before fork:  ${C_LGn}%d${RES}"
+		local t_lp="Last ping:            ${C_LGn}%s${RES} (UTC)"
+		
+		local t_nv="\nNode version:         ${C_LGn}%s${RES}"
+		local t_lb="Latest block height:  ${C_LGn}%s${RES}"
 	fi
-	local is_docker=`docker ps -a 2>/dev/null | grep minima_node`
-	if [ -n "$is_docker" ]; then
-		printf_n "${C_R}You installed node into Docker!${RES}"
-		docker_install
-		return 0 2>/dev/null; exit 0
+
+	# Actions
+	local local_rpc="http://localhost:${port}/"
+	local status=`wget -qO- "${local_rpc}status"`
+	local incentivecash=`wget -qO- "${local_rpc}incentivecash"`
+	
+	local node_id=`jq -r ".response.uid" <<< "$incentivecash"`
+	if [ ! -n "$node_id" ]; then
+		printf_n "$t_re"
+		return 1 2>/dev/null; exit 1
+	fi
+	local node_id_hidden=`printf "$node_id" | sed 's%.*-.*-.*- *%...-%'`
+	local raf=`jq -r ".response.details.rewards.dailyRewards" <<< "$incentivecash"`
+	local rbf=`jq -r ".response.details.rewards.previousRewards" <<< "$incentivecash"`
+	local last_ping=`jq -r ".response.details.lastPing" <<< "$incentivecash"`
+	local last_ping_unix=`date --date "$last_ping" +"%s"`
+	local last_ping_human=`date --date "$last_ping" +"%d.%m.%y %H:%M" -u`
+	
+	local node_version=`jq -r ".response.version" <<< "$status"`
+	local latest_block_height=`jq -r ".response.chain.block" <<< "$status"`
+	
+	# Output
+	if [ "$raw_output" = "true" ]; then
+		printf_n '{"node_id": "%s", "raf": %d, "rbf": %d, "last_ping": %d, "node_version": "%s", "latest_block_height": %d}' \
+"$node_id" \
+"$raf" \
+"$rbf" \
+"$last_ping_unix" \
+"$node_version" \
+"$latest_block_height" 2>/dev/null
 	else
-		sudo apt update
-		sudo apt upgrade -y
-		if [ -f "/etc/systemd/system/${node_name}.service" ]; then
-			printf_n "\n${C_LGn}Updating a node...${RES}"
-			local rpc_port=`cat "/etc/systemd/system/${node_name}.service" | grep -oP "(?<=-rpc )([^%]+)(?= )"`
-			if [ ! -n "$rpc_port" ]; then
-				local rpc_port="9002"
-			fi
-			wget -qO- "localhost:${rpc_port}/quit"
-			printf_n
-			sleep 10
-			sudo systemctl stop "$node_name"
-			sudo systemctl disable "$node_name"
-		else
-			sudo apt install openjdk-11-jre-headless -y
-			printf_n "${C_LGn}Node installation...${RES}"
-		fi
-	fi
-	mkdir -p $HOME/.minima "$HOME/.${node_name}"
-	wget -qO $HOME/.minima/minima.jar.new https://github.com/minima-global/Minima/raw/master/jar/minima.jar
-	mv $HOME/.minima/minima.jar $HOME/.minima/minima.jar.bk
-	mv $HOME/.minima/minima.jar.new $HOME/.minima/minima.jar
-	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/ports_opening.sh) "$port" $((port+1))
-	printf "[Unit]
-Description=Minima Node
-After=network-online.target
-
-[Service]
-User=$USER
-ExecStart=`which java` -Xmx${ram} -jar $HOME/.minima/minima.jar -data $HOME/.${node_name} -port ${port} -rpcenable -rpc $((port+1)) -daemon
-Restart=on-failure
-RestartSec=3
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target" > "/etc/systemd/system/${node_name}.service"
-	sudo systemctl daemon-reload
-	sudo systemctl enable "$node_name"
-	sudo systemctl restart "$node_name"
-	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "${node_name}_log" -v "sudo journalctl -fn 100 -u ${node_name}" -a
-	printf_n "${C_LGn}Done!${RES}\n"
-	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/logo.sh)
-	printf_n "
-The node was ${C_LGn}started${RES}.
-
-\tv ${C_LGn}Useful commands${RES} v
-
-To view the node status: ${C_LGn}systemctl status ${node_name}${RES}
-To view the node log: ${C_LGn}${node_name}_log${RES}
-To restart the node: ${C_LGn}systemctl restart ${node_name}${RES}
-"
-}
-docker_install() {
-	if [ "$port" = "9001" ]; then
-		local node_name="minima"
-		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "minima_node_info" -v ". <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/node_info.sh) -l RU 2> /dev/null" -a
-	else
-		local node_name="minima_${port}"
-		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "${node_name}_node_info" -v ". <(wget -qO- https://raw.githubusercontent.com/SecorD0/Minima/main/node_info.sh) -l RU -p $((port+1)) 2> /dev/null" -a
-	fi
-	local is_docker=`docker ps -a 2>/dev/null | grep "${node_name}_node"`
-	if [ -n "$is_docker" ]; then
-		printf_n "\n${C_LGn}Updating a node...${RES}"
-		wget -qO- "localhost:$((port+1))/quit"
+		printf_n "$t_ni" "$node_id_hidden"
+		printf_n "$t_raf" "$raf"
+		printf_n "$t_rbf" "$rbf"
+		printf_n "$t_lp" "$last_ping_human"
+		
+		printf_n "$t_nv" "$node_version"
+		printf_n "$t_lb" "$latest_block_height"
 		printf_n
-		sleep 10
-		docker restart "${node_name}_node"
-	elif [ -f /etc/systemd/system/minima.service ]; then
-		printf_n "${C_R}You installed node via a service file!${RES}"
-		install
-		return 0 2>/dev/null; exit 0
-	else
-		printf_n "${C_LGn}Node installation...${RES}"
-		. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/docker.sh)
-		docker run -dit --restart on-failure --name "${node_name}_node" -p $port:9001 -p $((port+1)):9002 tcsr/minima
 	fi
-	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/main/insert_variable.sh) -n "${node_name}_log" -v "docker logs ${node_name}_node -fn 100" -a
-	printf_n "${C_LGn}Done!${RES}\n"
-	. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/logo.sh)
-	printf_n "
-The node was ${C_LGn}started${RES}.
-
-\tv ${C_LGn}Useful commands${RES} v
-
-To view the node log: ${C_LGn}${node_name}_log${RES}
-To restart the node: ${C_LGn}docker restart ${node_name}_node${RES}
-"
-}
-uninstall() {
-	printf_n "${C_LGn}Node uninstalling...${RES}"
-	local is_docker=`docker ps -a 2>/dev/null | grep minima_node`
-	if [ -n "$is_docker" ]; then
-		docker rm `docker ps -a | grep minima | awk '{print $1}'` -f
-		docker rmi tscr/minima
-	else
-		local service_files=`echo /etc/systemd/system/minima* | sed 's%/etc/systemd/system/%%g'`
-		for service_file in $service_files; do
-			sudo systemctl stop "$service_file"
-		done
-		rm /etc/systemd/system/minima*
-		sudo systemctl daemon-reload
-	fi
-	rm -rf $HOME/minima* $HOME/.minima* $HOME/minima.jar* $HOME/minima_update.sh* $HOME/minima_service.sh* /etc/cron.weekly/minima*
-	sed -i "/minima/d" $HOME/.bash_profile
-	. $HOME/.bash_profile
-	printf_n "${C_LGn}Done!${RES}"
-}
-register() {
-	printf "${C_LGn}Input your Node ID: ${RES}"
-	local id
-	read -r id
-	wget -qO- "localhost:$((port+1))/incentivecash%20uid:${id}"
-	printf_n "\n${C_LGn}Done!${RES}"
 }
 
-# Actions
-if [ `whoami` != "root" ]; then
-	printf_n "${C_LGn}Authorizing as root user...${RES}"
-	sudo su -
-fi
-sudo apt install wget -y &>/dev/null
-. <(wget -qO- https://github.com/MrN1x0n/MrN1x0n/raw/utils/logo.sh)
-$function
+main
